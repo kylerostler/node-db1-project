@@ -20,7 +20,9 @@ router.post('/',
 md.checkAccountPayload, 
 md.checkAccountNameUnique, async (req, res, next) => {
   try {
-    const newAccount = await Account.create(req.body)
+    const newAccount = await Account.create({ 
+      name: req.body.name.trim(),
+       budget: req.body.budget})
     res.status(201).json(newAccount)
   } catch (err) {
     next(err)
@@ -28,28 +30,21 @@ md.checkAccountNameUnique, async (req, res, next) => {
 })
 
 router.put('/:id', 
-md.checkAccountId, 
-md.checkAccountNameUnique, 
-md.checkAccountPayload, (req, res, next) => {
+md.checkAccountId,  
+md.checkAccountPayload, async (req, res, next) => {
+  const updated = await Account.updateById(req.params.id, req.body)
   try {
-
+    res.json(updated)
   } catch (err) {
     next(err)
   }
 });
 
 router.delete('/:id', 
-md.checkAccountId, (req, res, next) => { 
+md.checkAccountId, async (req, res, next) => { 
   try {
-
-  } catch (err) {
-    next(err)
-  }
-})
-
-router.use((err, req, res, next) => { // eslint-disable-line
-  try {
-
+    await Account.deleteById(req.params.id)
+    res.json(req.account)
   } catch (err) {
     next(err)
   }
@@ -57,6 +52,7 @@ router.use((err, req, res, next) => { // eslint-disable-line
 
 router.use((err, req, res, next) => {
   res.status(err.status || 500).json({
+    status: err.status,
     message: err.message
   })
 })
